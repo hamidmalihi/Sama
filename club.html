@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00e676">
+ 
 
   <title>کارت وفاداری</title>
   <style>
@@ -108,16 +107,7 @@
     }
   </style>
 </head>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(function (reg) {
-        console.log('Service Worker ثبت شد:', reg);
-      }).catch(function (err) {
-        console.error('Service Worker ثبت نشد:', err);
-      });
-  }
-</script>
+
 
 <body>
   <div class="container">
