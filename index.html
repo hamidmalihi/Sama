@@ -7,28 +7,29 @@
 <body>
   <h1>فرم کارت وفاداری</h1>
   <form id="loyaltyForm">
-    <input type="text" name="name" placeholder="نام" required><br><br>
     <input type="text" name="phone" placeholder="شماره تلفن" required><br><br>
-    <input type="number" name="points" value="10" readonly><br><br>
     <button type="submit">ثبت</button>
   </form>
+  
 
   <script>
-    document.getElementById("loyaltyForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+document.getElementById("loyaltyForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
 
-      fetch("https://script.google.com/macros/s/AKfycbxVFs82oss3bDV3zTjwAYhXmlg13yN7EpcVMbKNy7szZqz8u6DCpylW3q9VoVcaD2blRg/exec", {
-        method: "POST",
-        body: formData
-      })
-      .then(res => res.text())
-      .then(data => {
-        alert("اطلاعات با موفقیت ثبت شد!");
-        document.getElementById("loyaltyForm").reset();
-      })
-      .catch(err => alert("خطا در ارسال"));
-    });
+  fetch("https://script.google.com/macros/s/AKfycbxVFs82oss3bDV3zTjwAYhXmlg13yN7EpcVMbKNy7szZqz8u6DCpylW3q9VoVcaD2blRg/exec", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.text())
+  .then(data => {
+    alert(data); // پیام برگشتی از سرور
+    document.getElementById("loyaltyForm").reset();
+  })
+  .catch(err => alert("❌ خطا در ارسال اطلاعات"));
+});
+
   </script>
 </body>
 </html>
+
