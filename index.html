@@ -7,34 +7,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet">
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      direction: rtl;
+      
       font-family: 'Vazirmatn', sans-serif;
     }
 
     body {
-      background-image: linear-gradient(to right top, #4f3d1c, #705c1d, #8c801a, #a3a717, #b2d11a);
+      padding: 20px;
+      background-image: linear-gradient(to top, #09203f 0%, #537895 100%);
       color: #fff;
       min-height: 100vh;
+    }
+
+    .responsive {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      background: url(Pasta.jpg) no-repeat center;
+      background-size: cover;
+      width: 100%;
+      height: 30vh;
+      max-height: 300px;
+      border-radius: 20px;
     }
 
     .container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
       width: 100%;
       max-width: 1200px;
+      margin: 40px auto 0;
+      padding: 0 10px;
     }
 
     a.card {
       background: linear-gradient(145deg, #2d9e00, #00520b);
-      padding: 30px;
+      padding: 30px 20px;
       border-radius: 20px;
       text-align: center;
       box-shadow: 0 10px 20px rgba(0,0,0,0.4);
@@ -57,10 +67,16 @@
       .card h2 {
         font-size: 1.2rem;
       }
+
+      .responsive {
+        height: 200px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="responsive"></div>
+
   <div class="container">
     <a class="card" href="order.html">
       <h2>ثبت سفارش</h2>
