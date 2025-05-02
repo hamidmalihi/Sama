@@ -133,14 +133,6 @@ async function loadMenu() {
 
 
 
-// در توابع fetch:
-try {
-  const response = await fetch('url'); // تعریف response
-  const data = await response.json(); // استفاده درست
-  console.log(data);
-} catch (error) {
-  console.error('Error:', error);
-}
 
 // نرمالایز کردن داده‌های منو - نسخه بهبود یافته
 function normalizeMenuData(menuData) {
