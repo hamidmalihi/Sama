@@ -18,35 +18,38 @@ function showNotification(message, type = 'success') {
 
 // بارگذاری منو - نسخه اصلاح شده
 async function loadMenu() {
-    try {
-      showNotification('در حال بارگذاری منو...', 'warning');
-      
-      const response = await fetch(API_URL, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`خطای شبکه: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      fullMenu = normalizeMenuData(responseData.menu);
-      renderMenu();
-      saveMenuToLocal();
-      showNotification('منو با موفقیت بارگذاری شد');
-      
-    } catch (error) {
-      console.error('خطا در بارگذاری منو:', error);
-      showNotification('خطا در بارگذاری منو. استفاده از داده‌های محلی...', 'error');
-      loadLocalMenu();
+  try {
+    showNotification('در حال بارگذاری منو...', 'warning');
+    
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // حذف mode: 'cors' (پیش‌فرض است)
+    });
+    
+    if (!response.ok) throw new Error(`خطای شبکه: ${response.status}`);
+    
+    const data = await response.json();
+    
+    // اعتبارسنجی پاسخ سرور
+    if (!data || !data.data || !data.data.menu) {
+      throw new Error('ساختار داده دریافتی نامعتبر است');
     }
+    
+    fullMenu = normalizeMenuData(data.data.menu);
+    renderMenu();
+    saveMenuToLocal();
+    showNotification('منو با موفقیت بارگذاری شد');
+    
+  } catch (error) {
+    console.error('خطا در بارگذاری منو:', error);
+    showNotification('خطا در بارگذاری منو. استفاده از داده‌های محلی...', 'error');
+    loadLocalMenu();
   }
-  
+}
+
   // ثبت سفارش - نسخه اصلاح شده
   async function submitOrder() {
     if (order.length === 0) {
@@ -55,9 +58,13 @@ async function loadMenu() {
     }
   
     const orderData = {
-      items: order,
+      items: order.map(item => ({
+        name: item.name,
+        price: item.price,
+        qty: item.qty
+      })),
       total: order.reduce((sum, item) => sum + (item.price * item.qty), 0),
-      date: new Date().toLocaleString('fa-IR')
+      date: new Date().toISOString()
     };
   
     try {
@@ -65,35 +72,72 @@ async function loadMenu() {
       
       const response = await fetch(API_URL, {
         method: 'POST',
-        mode: "no-cors",
-        body: JSON.stringify(orderData),
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
       });
-      
-      if (!response.ok) {
-        throw new Error(`خطای سرور: ${response.status}`);
-      }
-      
+  
+      // اینجا response.json() را فقط اگر status code 200-299 باشد فراخوانی کنید
       const result = await response.json();
-      if (result.success) {
-        showNotification('سفارش با موفقیت ثبت شد');
-        saveOrderToHistory();
-        printInvoice();
-        order = [];
-        updateOrderTable();
-      } else {
-        throw new Error(result.error || 'خطا در ثبت سفارش');
+      
+      if (result.status !== 'success') {
+        throw new Error(result.message || 'خطا در ثبت سفارش');
       }
+  
+      showNotification('سفارش با موفقیت ثبت شد');
+      saveOrderToHistory();
+      printInvoice();
+      order = [];
+      updateOrderTable();
       
     } catch (error) {
       console.error('خطا در ثبت سفارش:', error);
-      showNotification(error.message, 'error');
+      showNotification('خطا در ارتباط با سرور: ' + error.message, 'error');
+      // ذخیره سفارش به صورت آفلاین
+      saveOrderToHistory();
     }
   }
 
 
+  const fetchWithTimeout = (url, options, timeout = 8000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), timeout)
+      )
+    ]);
+  };
+
+
+
+  // در ابتدای اسکریپت
+let isOnline = navigator.onLine;
+
+window.addEventListener('online', () => {
+  isOnline = true;
+  showNotification('اتصال اینترنت برقرار شد', 'success');
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  showNotification('اتصال اینترنت قطع شد. حالت آفلاین فعال شد', 'warning');
+});
+
+class APIError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
+// در توابع fetch:
+if (!response.ok) {
+  throw new APIError(
+    `خطای سرور: ${response.statusText}`,
+    response.status
+  );
+}
 
 // نرمالایز کردن داده‌های منو - نسخه بهبود یافته
 function normalizeMenuData(menuData) {
