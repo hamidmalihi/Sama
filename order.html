@@ -1,131 +1,183 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ثبت سفارش</title>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      direction: rtl;
-      font-family: 'Vazirmatn', sans-serif;
-    }
-
-    body {
-      background-color: #121212;
-      color: #fff;
-      min-height: 100vh;
-      padding: 40px 20px;
-      display: flex;
-      justify-content: center;
-      align-items: start;
-    }
-
-    .form-container {
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #f1f1f1;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-    }
-
-    input, textarea, select, button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: none;
-      border-radius: 10px;
-      background-color: #2c2c2c;
-      color: white;
-      font-size: 1rem;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      outline: 2px solid #00bcd4;
-    }
-
-    button {
-      background-color: #00bcd4;
-      color: black;
-      font-weight: bold;
-      transition: 0.3s;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0097a7;
-    }
-
-    @media (max-width: 500px) {
-      .form-container {
-        padding: 20px;
-      }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سفارش‌گیر کافی‌شاپ | نسخه پیشرفته</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:,">
 </head>
 <body>
-  <div class="form-container">
-    <h2>فرم ثبت سفارش</h2>
-    <form onsubmit="submitOrder(event)">
-      <label for="name">نام مشتری</label>
-      <input type="text" id="name" required />
+  <header>
+    <div class="container header-content">
+      <h1>سفارش‌گیر کافی‌شاپ</h1>
+      <div>
+        <button onclick="showAdminPanel()" class="secondary">پنل مدیریت</button>
+        <button onclick="showOrderHistory()" class="secondary">تاریخچه سفارشات</button>
+      </div>
+    </div>
+  </header>
 
-      <label for="phone">شماره تماس</label>
-      <input type="tel" id="phone" required />
+  <div class="container">
+    <div id="notification" class="notification"></div>
 
-      <label for="food">نام غذا</label>
-      <input type="text" id="food" required />
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('ordering')">سفارش جدید</div>
+      <div class="tab" onclick="switchTab('reports')">گزارشات</div>
+    </div>
 
-      <label for="quantity">تعداد</label>
-      <input type="number" id="quantity" min="1" required />
+    <div id="ordering" class="tab-content active">
+      <div class="card">
+        <div id="filters" style="display: flex; align-items: center; flex-wrap: wrap;">
+          <div class="form-group">
+            <label for="searchInput">جستجو:</label>
+            <input type="text" id="searchInput" placeholder="نام آیتم..." oninput="renderMenu()">
+          </div>
+          <div class="form-group">
+            <label for="categorySelect">دسته‌بندی:</label>
+            <select id="categorySelect" onchange="renderMenu()"></select>
+          </div>
+          <button onclick="resetFilters()">نمایش همه</button>
+        </div>
+      </div>
 
-      <label for="address">آدرس</label>
-      <textarea id="address" rows="3" required></textarea>
+      <div class="card">
+        <h2>منوی کافی‌شاپ</h2>
+        <div id="menu"></div>
+      </div>
 
-      <button type="submit">ارسال سفارش</button>
-    </form>
+      <div class="card">
+        <h2>سفارش فعلی</h2>
+        <div id="orderSummary">
+          <table>
+            <thead>
+              <tr>
+                <th>نام آیتم</th>
+                <th>تعداد</th>
+                <th>قیمت واحد</th>
+                <th>جمع</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="orderTable"></tbody>
+          </table>
+          <div style="text-align: left; margin-top: 20px;">
+            <p id="total" style="font-size: 18px; font-weight: bold;">جمع کل: ۰ تومان</p>
+            <button onclick="showOrderPreview()" class="success">پیش‌نمایش فاکتور</button>
+            <button onclick="clearOrder()" class="danger">پاک کردن سفارش</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="reports" class="tab-content">
+      <div class="card">
+        <h2>گزارشات روزانه</h2>
+        <div id="dailyReports"></div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    function submitOrder(e) {
-      e.preventDefault();
-      const name = document.getElementById('name').value;
-      const phone = document.getElementById('phone').value;
-      const food = document.getElementById('food').value;
-      const quantity = document.getElementById('quantity').value;
-      const address = document.getElementById('address').value;
+  <!-- مدال‌ها -->
+  <div id="previewModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('previewModal')">&times;</span>
+      <h2>پیش‌نمایش فاکتور</h2>
+      <div id="previewContent" class="print-content"></div>
+      <div style="margin-top: 20px;">
+        <button onclick="printInvoice()" class="success">چاپ فاکتور</button>
+        <button onclick="submitOrder()" class="secondary">ثبت سفارش</button>
+        <button onclick="closeModal('previewModal')" class="danger">بستن</button>
+      </div>
+    </div>
+  </div>
 
-      const order = {
-        name,
-        phone,
-        food,
-        quantity,
-        address,
-        time: new Date().toLocaleString('fa-IR')
-      };
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('historyModal')">&times;</span>
+      <h2>تاریخچه سفارشات</h2>
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="historySearch" placeholder="جستجو در تاریخچه..." oninput="filterHistory()">
+        <select id="historyFilter" onchange="filterHistory()">
+          <option value="all">همه سفارشات</option>
+          <option value="today">امروز</option>
+          <option value="week">هفته جاری</option>
+          <option value="month">ماه جاری</option>
+        </select>
+      </div>
+      <div id="historyContent" style="max-height: 500px; overflow-y: auto;"></div>
+      <div style="margin-top: 20px;">
+        <button onclick="exportToExcel()" class="success">خروجی Excel</button>
+        <button onclick="closeModal('historyModal')" class="danger">بستن</button>
+      </div>
+    </div>
+  </div>
 
-      // ذخیره در localStorage
-      const orders = JSON.parse(localStorage.getItem('orders')) || [];
-      orders.push(order);
-      localStorage.setItem('orders', JSON.stringify(orders));
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('adminModal')">&times;</span>
+      <h2>پنل مدیریت</h2>
+      
+      <div class="tabs">
+        <div class="tab active" onclick="switchAdminTab('menuManagement')">مدیریت منو</div>
+        <div class="tab" onclick="switchAdminTab('backupRestore')">پشتیبان‌گیری</div>
+      </div>
+      
+      <div id="menuManagement" class="tab-content active">
+        <h3>مدیریت منو</h3>
+        <div style="margin-bottom: 20px;">
+          <button onclick="showAddCategoryModal()" class="success">اضافه کردن دسته‌بندی</button>
+          <button onclick="showAddItemModal()" class="success">اضافه کردن آیتم</button>
+        </div>
+        <div id="adminMenuContent"></div>
+      </div>
+      
+      <div id="backupRestore" class="tab-content">
+        <h3>پشتیبان‌گیری و بازیابی</h3>
+        <div style="margin-bottom: 20px;">
+          <button onclick="backupData()" class="success">تهیه پشتیبان</button>
+          <button onclick="document.getElementById('restoreFile').click()" class="warning">بازیابی پشتیبان</button>
+          <input type="file" id="restoreFile" style="display: none;" onchange="restoreData(this)">
+        </div>
+        <div id="backupInfo"></div>
+      </div>
+    </div>
+  </div>
 
-      alert("سفارش با موفقیت ثبت شد!");
-      e.target.reset();
-    }
-  </script>
+  <div id="addCategoryModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <span class="close-modal" onclick="closeModal('addCategoryModal')">&times;</span>
+      <h2>اضافه کردن دسته‌بندی جدید</h2>
+      <div class="form-group">
+        <label for="newCategoryName">نام دسته‌بندی:</label>
+        <input type="text" id="newCategoryName" placeholder="مثلاً: نوشیدنی‌های گرم">
+      </div>
+      <button onclick="addNewCategory()" class="success">ذخیره</button>
+      <button onclick="closeModal('addCategoryModal')" class="danger">انصراف</button>
+    </div>
+  </div>
+
+  <div id="addItemModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <span class="close-modal" onclick="closeModal('addItemModal')">&times;</span>
+      <h2>اضافه کردن آیتم جدید</h2>
+      <div class="form-group">
+        <label for="itemCategory">دسته‌بندی:</label>
+        <select id="itemCategory"></select>
+      </div>
+      <div class="form-group">
+        <label for="itemName">نام آیتم:</label>
+        <input type="text" id="itemName" placeholder="مثلاً: کاپوچینو">
+      </div>
+      <div class="form-group">
+        <label for="itemPrice">قیمت (تومان):</label>
+        <input type="number" id="itemPrice" placeholder="مثلاً: 25000">
+      </div>
+      <button onclick="addNewItem()" class="success">ذخیره</button>
+      <button onclick="closeModal('addItemModal')" class="danger">انصراف</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
