@@ -1,4 +1,24 @@
 // تنظیمات اولیه
+  // در ابتدای اسکریپت
+  let isOnline = navigator.onLine;
+
+  window.addEventListener('online', () => {
+    isOnline = true;
+    showNotification('اتصال اینترنت برقرار شد', 'success');
+  });
+  
+  window.addEventListener('offline', () => {
+    isOnline = false;
+    showNotification('اتصال اینترنت قطع شد. حالت آفلاین فعال شد', 'warning');
+  });
+  
+  class APIError extends Error {
+    constructor(message, statusCode) {
+      super(message);
+      this.statusCode = statusCode;
+    }
+  }
+
 const API_URL = "https://script.google.com/macros/s/AKfycbwqC12LXsRFoPOm6P19_QEuJc6bBPXNOCsyZjd4vi7eibfGKA-7-0wXSBfeFQe4NW-2/exec";
 let order = [];
 let fullMenu = {};
@@ -111,32 +131,15 @@ async function loadMenu() {
 
 
 
-  // در ابتدای اسکریپت
-let isOnline = navigator.onLine;
 
-window.addEventListener('online', () => {
-  isOnline = true;
-  showNotification('اتصال اینترنت برقرار شد', 'success');
-});
-
-window.addEventListener('offline', () => {
-  isOnline = false;
-  showNotification('اتصال اینترنت قطع شد. حالت آفلاین فعال شد', 'warning');
-});
-
-class APIError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
 
 // در توابع fetch:
-if (!response.ok) {
-  throw new APIError(
-    `خطای سرور: ${response.statusText}`,
-    response.status
-  );
+try {
+  const response = await fetch('url'); // تعریف response
+  const data = await response.json(); // استفاده درست
+  console.log(data);
+} catch (error) {
+  console.error('Error:', error);
 }
 
 // نرمالایز کردن داده‌های منو - نسخه بهبود یافته
